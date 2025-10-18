@@ -4,6 +4,8 @@ import { PaymentSource } from '@prisma/client';
 import SubscriptionView from './components/SubscriptionView';
 import { startOfMonth, endOfMonth } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const paymentSources: PaymentSource[] = await prisma.paymentSource.findMany();
 
