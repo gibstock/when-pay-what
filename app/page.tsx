@@ -26,6 +26,8 @@ export default async function Home() {
     },
   });
 
+  console.log('list subs: ', listSubscriptions);
+
   const calendarSubscriptions = await prisma.subscription.findMany({
     include: {
       paymentSource: true,
