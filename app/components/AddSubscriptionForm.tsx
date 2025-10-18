@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { PaymentSource } from '@prisma/client';
+import { useRouter } from 'next/navigation';
 
 interface AddSubscriptionFormProps {
   paymentSources: PaymentSource[];
@@ -18,6 +19,8 @@ export default function AddSubscriptionForm({
   );
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrencePeriod, setRecurrencePeriod] = useState('MONTHLY');
+
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +45,7 @@ export default function AddSubscriptionForm({
       if (!response.ok) {
         throw new Error('Failed to create subscription');
       }
-
+      router.refresh();
       setName('');
       setAmount('');
       setDueDate('');

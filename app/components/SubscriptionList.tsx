@@ -1,7 +1,7 @@
 'use client';
-import { Prisma } from '@prisma/client';
-import { useState } from 'react';
 
+import { Prisma } from '@prisma/client';
+import { useRouter } from 'next/navigation';
 type SubscriptionWithPaymentSource = Prisma.SubscriptionGetPayload<{
   include: { paymentSource: true };
 }>;
@@ -13,7 +13,8 @@ interface SubscriptionListProps {
 export default function SubscriptionList({
   subscriptions,
 }: SubscriptionListProps) {
-  const [subs, setSubs] = useState(subscriptions);
+  const router = useRouter();
+
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this subscription?')) {
       return;
@@ -31,14 +32,14 @@ export default function SubscriptionList({
         throw new Error('Failed to delete');
       }
 
-      setSubs(subs.filter((sub) => sub.id !== id));
+      router.refresh();
     } catch (error) {
       console.error(error);
       alert('Error deleting subscription.');
     }
   };
 
-  if (subs.length === 0) {
+  if (subscriptions.length === 0) {
     return (
       <div className="text-center p-8 bg-gray-50 rounded-lg">
         <p className="text-gray-500">
@@ -53,13 +54,13 @@ export default function SubscriptionList({
       <h2 className="text-2xl font-semibold border-b pb-2">
         Upcoming Payments
       </h2>
-      {subs.map((sub) => (
+      {subscriptions.map((sub) => (
         <div
           key={sub.id}
           className="p-4 bg-white rounded-lg shadow-md flex justify-between items-center"
         >
           <div>
-            <p className="font-bold text-lg text-gray-700">{sub.name}</p>
+            <p className="font-bold text-lg">{sub.name}</p>
             <p className="text-sm text-gray-600">
               from {sub.paymentSource.name}
             </p>
