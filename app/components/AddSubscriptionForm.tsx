@@ -22,8 +22,11 @@ export default function AddSubscriptionForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+    const apiUrl = `${basePath}/api/subscriptions`;
+
     try {
-      const response = await fetch('/api/subscriptions', {
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

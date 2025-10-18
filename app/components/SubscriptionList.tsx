@@ -20,8 +20,11 @@ export default function SubscriptionList({
       return;
     }
 
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+    const apiUrl = `${basePath}/api/subscriptions/${id}`;
+
     try {
-      const response = await fetch(`/api/subscriptions/${id}`, {
+      const response = await fetch(apiUrl, {
         method: 'DELETE',
       });
 
