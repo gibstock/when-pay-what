@@ -32,12 +32,15 @@ export default function PushSubscriptionManager() {
       try {
         const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
         const workerPath = `${basePath}/worker.js`;
-        console.log(`[Push Manager] Registering worker at: ${workerPath}`);
+        const scope = basePath ? `${basePath}/` : '/';
+        console.log(
+          `[Push Manager] Registering worker at: ${workerPath} with scope: ${scope}`
+        );
 
         const registration = await navigator.serviceWorker.register(
           workerPath,
           {
-            scope: basePath || '/', // Explicitly set the scope
+            scope: scope,
           }
         );
 
