@@ -60,7 +60,7 @@ export default function SubscriptionList({
           className="p-4 bg-white rounded-lg shadow-md flex justify-between items-center"
         >
           <div>
-            <p className="font-bold text-lg">{sub.name}</p>
+            <p className="font-bold text-lg text-gray-700">{sub.name}</p>
             <p className="text-sm text-gray-600">
               from {sub.paymentSource.name}
             </p>
