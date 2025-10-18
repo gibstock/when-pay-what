@@ -14,8 +14,6 @@ export default function SubscriptionList({
   subscriptions,
 }: SubscriptionListProps) {
   const [subs, setSubs] = useState(subscriptions);
-  console.log('subscriptions: ', subscriptions);
-  console.log('subs: ', subs);
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this subscription?')) {
       return;

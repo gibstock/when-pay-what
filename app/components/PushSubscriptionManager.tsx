@@ -42,7 +42,9 @@ export default function PushSubscriptionManager() {
               applicationServerKey: applicationServerKey,
             });
 
-            await fetch('/api/push/subscribe', {
+            const apiUrl = `${basePath}/api/push/subscribe`;
+
+            await fetch(apiUrl, {
               method: 'POST',
               body: JSON.stringify(subscription),
               headers: { 'Content-Type': 'application/json' },
