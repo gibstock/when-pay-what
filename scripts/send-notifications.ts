@@ -41,9 +41,38 @@ async function main() {
     process.env.VAPID_PRIVATE_KEY
   );
 
-  // const today = new Date();
-  // const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-  const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+  const endOfDay = add(today, { hours: 23, minutes: 59 });
+
+  const dueRecurringSubs = await prisma.subscription.findMany({
+    where: {
+      isRecurring: true,
+      dueDate: {
+        gte: today,
+        lte: endOfDay,
+      },
+    },
+  });
+
+  if (dueRecurringSubs.length > 0) {
+    console.log(`Found ${dueRecurringSubs.length} recurring subscriptions to roll over.`);
+    
+    for (const sub of dueRecurringSubs) {
+      if (!sub.recurrencePeriod) continue;
+      
+      const nextDueDate = getNextDueDate(sub.dueDate, sub.recurrencePeriod);
+      
+      await prisma.subscription.update({
+        where: { id: sub.id },
+        data: { 
+          dueDate: nextDueDate,
+          isPaidThisPeriod: false
+        },
+      });
+      console.log(`Rolled over ${sub.name}, reset paid status.`);
+    }
+  } else {
+    console.log('No recurring subscriptions to roll over today.');
+  }
 
   const dueSubscriptions = await prisma.subscription.findMany({
     where: {

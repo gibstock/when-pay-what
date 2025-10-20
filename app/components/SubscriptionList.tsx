@@ -15,6 +15,20 @@ export default function SubscriptionList({
 }: SubscriptionListProps) {
   const router = useRouter();
 
+  const handleMarkPaid = async (id: string) => {
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+    const apiUrl = `${basePath}/api/subscriptions/${id}/pay`;
+
+    try {
+      const response = await fetch(apiUrl, { method: 'POST' });
+      if (!response.ok) throw new Error('Failed to mark as paid');
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      alert('Error marking as paid.');
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this subscription?')) {
       return;
@@ -57,10 +71,18 @@ export default function SubscriptionList({
       {subscriptions.map((sub) => (
         <div
           key={sub.id}
-          className="p-4 bg-white rounded-lg shadow-md flex justify-between items-center"
+          className={`p-4 bg-white rounded-lg shadow-md flex justify-between items-center transition-opacity ${
+            sub.isPaidThisPeriod ? 'opacity-50' : 'opacity-100'
+          }`}
         >
           <div>
-            <p className="font-bold text-lg text-gray-700">{sub.name}</p>
+            <p
+              className={`font-bold text-lg text-gray-700 ${
+                sub.isPaidThisPeriod ? 'line-through' : ''
+              }`}
+            >
+              {sub.name}
+            </p>
             <p className="text-sm text-gray-600">
               from {sub.paymentSource.name}
             </p>
@@ -90,6 +112,14 @@ export default function SubscriptionList({
                 })}
               </p>
             </div>
+            {!sub.isPaidThisPeriod && (
+              <button
+                onClick={() => handleMarkPaid(sub.id)}
+                className="px-3 py-1 text-sm font-medium text-green-700 bg-green-100 rounded-md hover:bg-green-200"
+              >
+                Paid
+              </button>
+            )}
             <button
               onClick={() => handleDelete(sub.id)}
               className="px-3 py-1 text-sm font-medium text-red-600 bg-red-100 rounded-md hover:bg-red-200"
