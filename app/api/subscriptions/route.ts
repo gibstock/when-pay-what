@@ -5,7 +5,7 @@ import { RecurrencePeriod } from '@prisma/client';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, amount, dueDate, paymentSourceId, isRecurring, recurrencePeriod } = body;
+    const { name, amount, dueDate, paymentSourceId, isRecurring, recurrencePeriod, isTrial, trialType, trialAmount, trialEndDate } = body;
 
     if (!name || !amount || !dueDate || !paymentSourceId) {
       return NextResponse.json(
@@ -22,6 +22,10 @@ export async function POST(req: Request) {
         paymentSourceId: paymentSourceId,
         isRecurring: isRecurring,
         recurrencePeriod: recurrencePeriod as RecurrencePeriod,
+        isTrial: isTrial,
+        trialType: trialType,
+        trialAmount: trialAmount,
+        trialEndDate: trialEndDate
       },
     });
 

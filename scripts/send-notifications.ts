@@ -1,6 +1,7 @@
 import { prisma } from '../lib/prisma';
 import webpush from 'web-push';
-import { add, sub } from 'date-fns';
+import { add, startOfDay } from 'date-fns';
+import { Resend } from 'resend';
 
 function getNextDueDate(currentDueDate: Date, period: 'WEEKLY' | 'MONTHLY' | 'YEARLY'): Date {
   switch (period) {
@@ -18,6 +19,18 @@ function getNextDueDate(currentDueDate: Date, period: 'WEEKLY' | 'MONTHLY' | 'YE
 async function main() {
   console.log('Starting notification check...');
 
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const notificationEmail = process.env.NOTIFICATION_EMAIL_ADDRESS;
+
+  if (!resend || !notificationEmail) {
+    console.error('Resend API key or notification email is not configured.');
+    return;
+  }
+
+  // --- QUERY FOR SUBSCRIPTIONS DUE IN 3 DAYS ---
+  const today = startOfDay(new Date());
+  const reminderDate = add(today, { days: 3 });
+
   if (!process.env.VAPID_PRIVATE_KEY || !process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !process.env.VAPID_MAILTO) {
     console.error('VAPID keys are not configured in .env file.');
     return;
@@ -28,15 +41,15 @@ async function main() {
     process.env.VAPID_PRIVATE_KEY
   );
 
-  const today = new Date();
-  const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+  // const today = new Date();
+  // const startOfDay = new Date(today.setHours(0, 0, 0, 0));
   const endOfDay = new Date(today.setHours(23, 59, 59, 999));
 
   const dueSubscriptions = await prisma.subscription.findMany({
     where: {
       dueDate: {
-        gte: startOfDay,
-        lte: endOfDay,
+        gte: reminderDate,
+        lt: add(reminderDate, { days: 1 }),
       },
     },
   });
@@ -82,6 +95,29 @@ async function main() {
             data: { dueDate: nextDueDate },
         });
         console.log(`Updated next due date for ${sub.name} to ${nextDueDate.toLocaleDateString()}`);
+    }
+  }
+
+  for (const sub of dueSubscriptions) {
+    try {
+      await resend.emails.send({
+        from: 'onboarding@resend.dev',
+        to: notificationEmail,
+        subject: `Payment Reminder: ${sub.name}`,
+        html: `
+          <h1>Upcoming Payment Reminder</h1>
+          <p>Hi there,</p>
+          <p>This is a reminder that your payment for <strong>${sub.name}</strong> is due in 3 days.</p>
+          <ul>
+            <li><strong>Amount:</strong> $${sub.amount.toFixed(2)}</li>
+            <li><strong>Due Date:</strong> ${sub.dueDate.toLocaleDateString()}</li>
+          </ul>
+          <p>Thanks!</p>
+        `,
+      });
+      console.log(`Email reminder sent for ${sub.name}.`);
+    } catch (error) {
+      console.error(`Failed to send email for ${sub.name}:`, error);
     }
   }
 

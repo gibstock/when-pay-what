@@ -20,6 +20,11 @@ export default function AddSubscriptionForm({
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrencePeriod, setRecurrencePeriod] = useState('MONTHLY');
 
+  const [isTrial, setIsTrial] = useState(false);
+  const [trialType, setTrialType] = useState('FREE');
+  const [trialAmount, setTrialAmount] = useState('');
+  const [trialEndDate, setTrialEndDate] = useState('');
+
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,6 +44,10 @@ export default function AddSubscriptionForm({
           paymentSourceId,
           isRecurring,
           recurrencePeriod: isRecurring ? recurrencePeriod : null,
+          isTrial,
+          trialType,
+          trialAmount,
+          trialEndDate,
         }),
       });
 
@@ -112,6 +121,15 @@ export default function AddSubscriptionForm({
           <span>Recurring?</span>
         </label>
 
+        <label className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            checked={isTrial}
+            onChange={(e) => setIsTrial(e.target.checked)}
+          />
+          <span>Is this a Trial?</span>
+        </label>
+
         {isRecurring && (
           <select
             value={recurrencePeriod}
@@ -122,6 +140,56 @@ export default function AddSubscriptionForm({
             <option value="MONTHLY">Monthly</option>
             <option value="YEARLY">Yearly</option>
           </select>
+        )}
+        {isTrial && (
+          <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Trial Type
+                </label>
+                <select
+                  value={trialType}
+                  onChange={(e) => setTrialType(e.target.value)}
+                  className="mt-1 p-2 w-full border rounded"
+                >
+                  <option value="FREE">Free Trial</option>
+                  <option value="INTRO_OFFER">Introductory Offer</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Trial End Date
+                </label>
+                <input
+                  type="date"
+                  value={trialEndDate}
+                  onChange={(e) => setTrialEndDate(e.target.value)}
+                  className="mt-1 p-2 w-full border rounded"
+                  required
+                />
+              </div>
+            </div>
+            {trialType === 'INTRO_OFFER' && (
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Introductory Price
+                </label>
+                <input
+                  type="number"
+                  placeholder="e.g., 4.99"
+                  value={trialAmount}
+                  onChange={(e) => setTrialAmount(e.target.value)}
+                  className="mt-1 p-2 w-full border rounded"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  The &quot;Amount&quot; field above should be the full price
+                  after the trial ends.
+                </p>
+              </div>
+            )}
+          </div>
         )}
       </div>
       <button

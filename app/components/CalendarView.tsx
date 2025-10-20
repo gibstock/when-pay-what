@@ -3,8 +3,8 @@
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import { Prisma } from '@prisma/client';
+import { add } from 'date-fns';
 
-// This is the same type we used in SubscriptionList
 type SubscriptionWithPaymentSource = Prisma.SubscriptionGetPayload<{
   include: { paymentSource: true };
 }>;
@@ -14,21 +14,41 @@ interface CalendarViewProps {
 }
 
 export default function CalendarView({ subscriptions }: CalendarViewProps) {
-  // 1. Format your subscriptions into "events" for FullCalendar
-  const events = subscriptions.map((sub) => ({
-    id: sub.id,
-    title: `${sub.name} ($${sub.amount.toFixed(2)})`,
-    date: sub.dueDate, // FullCalendar can read ISO date strings
-    // We can even color-code recurring events
-    backgroundColor: sub.isRecurring ? '#1e40af' : '#1d4ed8',
-    borderColor: sub.isRecurring ? '#1e40af' : '#1d4ed8',
-  }));
+  const events = subscriptions.flatMap((sub) => {
+    const originalEvent = {
+      id: sub.id,
+      title: `${sub.name} ($${sub.amount.toFixed(2)})`,
+      date: sub.dueDate,
+      backgroundColor: sub.isRecurring ? '#1e40af' : '#1d4ed8',
+      borderColor: sub.isRecurring ? '#1e40af' : '#1d4ed8',
+    };
+
+    if (!sub.isRecurring || !sub.recurrencePeriod) {
+      return [originalEvent];
+    }
+
+    // If recurring, generate events for the next year
+    const futureEvents = [originalEvent];
+    let lastDate = new Date(sub.dueDate);
+    for (let i = 0; i < 12; i++) {
+      let nextDate;
+      if (sub.recurrencePeriod === 'MONTHLY') {
+        nextDate = add(lastDate, { months: 1 });
+      } else if (sub.recurrencePeriod === 'WEEKLY') {
+        nextDate = add(lastDate, { weeks: 1 });
+      } else {
+        // YEARLY
+        nextDate = add(lastDate, { years: 1 });
+      }
+
+      futureEvents.push({ ...originalEvent, date: nextDate });
+      lastDate = nextDate;
+    }
+    return futureEvents;
+  });
 
   return (
     <div className="p-4 bg-white rounded-lg shadow-md">
-      {/* FullCalendar needs a bit of CSS help to look right. 
-        We add this <style> tag to import its core styles.
-      */}
       <style>
         {`
           .fc {
@@ -51,7 +71,7 @@ export default function CalendarView({ subscriptions }: CalendarViewProps) {
         plugins={[dayGridPlugin]}
         initialView="dayGridMonth"
         events={events}
-        height="auto" // Makes it responsive
+        height="auto"
       />
     </div>
   );
