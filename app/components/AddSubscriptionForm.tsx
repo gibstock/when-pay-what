@@ -33,22 +33,24 @@ export default function AddSubscriptionForm({
     const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
     const apiUrl = `${basePath}/api/subscriptions`;
 
+    const body = {
+      name,
+      amount: parseFloat(amount),
+      dueDate: new Date(dueDate),
+      paymentSourceId,
+      isRecurring,
+      recurrencePeriod: isRecurring ? recurrencePeriod : null,
+      isTrial,
+      trialType: isTrial ? trialType : null,
+      trialAmount: isTrial && trialAmount ? parseFloat(trialAmount) : null,
+      trialEndDate: isTrial && trialEndDate ? new Date(trialEndDate) : null,
+    };
+
     try {
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          amount: parseFloat(amount),
-          dueDate: new Date(dueDate),
-          paymentSourceId,
-          isRecurring,
-          recurrencePeriod: isRecurring ? recurrencePeriod : null,
-          isTrial,
-          trialType,
-          trialAmount,
-          trialEndDate,
-        }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
