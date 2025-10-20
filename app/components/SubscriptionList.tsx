@@ -64,6 +64,11 @@ export default function SubscriptionList({
             <p className="text-sm text-gray-600">
               from {sub.paymentSource.name}
             </p>
+            {sub.notes && (
+              <p className="mt-1 text-sm text-gray-800 bg-gray-100 p-2 rounded border border-gray-200">
+                {sub.notes}
+              </p>
+            )}
             {sub.isRecurring && (
               <span className="mt-1 inline-block bg-gray-200 text-gray-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">
                 {sub.recurrencePeriod?.toLowerCase()}

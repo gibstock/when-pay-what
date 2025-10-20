@@ -17,6 +17,7 @@ export default function AddSubscriptionForm({
   const [paymentSourceId, setPaymentSourceId] = useState(
     paymentSources[0]?.id || ''
   );
+  const [notes, setNotes] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrencePeriod, setRecurrencePeriod] = useState('MONTHLY');
 
@@ -44,6 +45,7 @@ export default function AddSubscriptionForm({
       trialType: isTrial ? trialType : null,
       trialAmount: isTrial && trialAmount ? parseFloat(trialAmount) : null,
       trialEndDate: isTrial && trialEndDate ? new Date(trialEndDate) : null,
+      notes,
     };
 
     try {
@@ -60,6 +62,7 @@ export default function AddSubscriptionForm({
       setName('');
       setAmount('');
       setDueDate('');
+      setNotes('');
       alert('Subscription added successfully!');
     } catch (error) {
       console.error(error);
@@ -193,6 +196,22 @@ export default function AddSubscriptionForm({
             )}
           </div>
         )}
+      </div>
+      <div className="mt-4">
+        <label
+          htmlFor="notes"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Notes
+        </label>
+        <textarea
+          id="notes"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={3}
+          className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm"
+          placeholder="e.g., Confirmation #12345, cancel on website..."
+        />
       </div>
       <button
         type="submit"

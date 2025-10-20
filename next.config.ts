@@ -4,7 +4,7 @@ const basePath = '/when-pay-what'
 
 const nextConfig: NextConfig = {
   /* config options here */
-  basePath: basePath,
+  basePath: process.env.NODE_ENV === 'production' ? basePath : '',
   env: {
     NEXT_PUBLIC_BASE_PATH: basePath
   }

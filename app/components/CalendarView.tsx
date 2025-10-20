@@ -2,8 +2,11 @@
 
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
+import interactionPlugin from '@fullcalendar/interaction';
 import { Prisma } from '@prisma/client';
 import { add } from 'date-fns';
+import DayDetailsModal from './DayDetailsModal';
+import { useState } from 'react';
 
 type SubscriptionWithPaymentSource = Prisma.SubscriptionGetPayload<{
   include: { paymentSource: true };
@@ -14,6 +17,12 @@ interface CalendarViewProps {
 }
 
 export default function CalendarView({ subscriptions }: CalendarViewProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedEvents, setSelectedEvents] = useState<
+    { id: string; title: string }[]
+  >([]);
+
   const events = subscriptions.flatMap((sub) => {
     const originalEvent = {
       id: sub.id,
@@ -47,6 +56,15 @@ export default function CalendarView({ subscriptions }: CalendarViewProps) {
     return futureEvents;
   });
 
+  const handleDateClick = (arg: { date: Date; allDay: boolean }) => {
+    const eventsForDay = events.filter(
+      (event) => new Date(event.date).toDateString() === arg.date.toDateString()
+    );
+    setSelectedDate(arg.date);
+    setSelectedEvents(eventsForDay);
+    setIsModalOpen(true);
+  };
+
   return (
     <div className="p-4 bg-white rounded-lg shadow-md">
       <style>
@@ -68,10 +86,17 @@ export default function CalendarView({ subscriptions }: CalendarViewProps) {
         `}
       </style>
       <FullCalendar
-        plugins={[dayGridPlugin]}
+        plugins={[dayGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
         events={events}
         height="auto"
+        dateClick={handleDateClick}
+      />
+      <DayDetailsModal
+        isOpen={isModalOpen}
+        closeModal={() => setIsModalOpen(false)}
+        events={selectedEvents}
+        selectedDate={selectedDate}
       />
     </div>
   );

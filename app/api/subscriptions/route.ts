@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { RecurrencePeriod } from '@prisma/client';
+import { RecurrencePeriod, TrialType } from '@prisma/client';
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, amount, dueDate, paymentSourceId, isRecurring, recurrencePeriod, isTrial, trialType, trialAmount, trialEndDate } = body;
+    const { name, amount, dueDate, paymentSourceId, isRecurring, recurrencePeriod, isTrial, trialType, trialAmount, trialEndDate, notes } = body;
 
     if (!name || !amount || !dueDate || !paymentSourceId) {
       return NextResponse.json(
@@ -21,11 +21,12 @@ export async function POST(req: Request) {
         dueDate: new Date(dueDate),
         paymentSourceId: paymentSourceId,
         isRecurring: isRecurring,
-        recurrencePeriod: recurrencePeriod as RecurrencePeriod,
+        recurrencePeriod: recurrencePeriod as RecurrencePeriod || null,
         isTrial: isTrial,
-        trialType: trialType,
-        trialAmount: trialAmount,
-        trialEndDate: trialEndDate
+        trialType: trialType as TrialType || null,
+        trialAmount: trialAmount ? parseFloat(trialAmount) : null,
+        trialEndDate: trialEndDate ? new Date(trialEndDate) : null,
+        notes: notes || null,
       },
     });
 
