@@ -209,7 +209,7 @@ export default function AddSubscriptionForm({
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={3}
-          className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm"
+          className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm text-gray-700"
           placeholder="e.g., Confirmation #12345, cancel on website..."
         />
       </div>
